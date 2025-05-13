@@ -3,7 +3,7 @@ This is a web-based Student Attendance Management System developed using HTML, C
 It enables teachers or admins to record, manage, and monitor student attendance efficiently via a user-friendly interface. 
 The system is designed to run on a local server using XAMPP.
 
-# TECK STACK
+# TECH STACK
 **Frontend:** HTML, CSS, JavaScript
 
 **Backend:** PHP
