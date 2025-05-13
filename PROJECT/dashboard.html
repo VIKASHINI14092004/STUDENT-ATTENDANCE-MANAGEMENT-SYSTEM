@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Student Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            width: 400px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h2 { margin-bottom: 20px; color: #333; }
+        p { color: #555; font-size: 16px; }
+        .btn {
+            display: block;
+            background: #2575fc;
+            color: white;
+            border: none;
+            padding: 10px;
+            margin: 10px 0;
+            width: 100%;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+        }
+        .btn:hover { background: #6a11cb; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>👤 Student Dashboard</h2>
+
+        <!-- Profile Info -->
+        <p id="name">Name: </p>
+        <p id="studentId">Student ID: </p>
+
+        <!-- Options -->
+        <a href="mark_attendance.html" class="btn">Mark Attendance</a>
+        <a href="view_attendance.html" class="btn">View Attendance</a>
+        <a href="login.html" class="btn">Logout</a>
+    </div>
+
+    <script>
+        // ✅ Get student info from SESSION
+        fetch('php/get_session.php')
+            .then(response => response.json())
+            .then(session => {
+                if (session.error) {
+                    alert('Session expired. Please login again.');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const id = session.student_id;
+                const name = session.student_name;
+
+                // ✅ Show student data
+                document.getElementById('name').textContent = 'Name: ' + name;
+                document.getElementById('studentId').textContent = 'Student ID: ' + id;
+            })
+            .catch(err => {
+                console.error('Error getting session:', err);
+            });
+    </script>
+
+</body>
+</html>

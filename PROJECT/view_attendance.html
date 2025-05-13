@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>View Attendance</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h2 { margin-bottom: 20px; color: #333; }
+        p { color: #555; font-size: 16px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #2575fc;
+            color: white;
+        }
+        tr:nth-child(even) {background-color: #f2f2f2;}
+        .btn {
+            display: block;
+            background: #2575fc;
+            color: white;
+            border: none;
+            padding: 10px;
+            margin: 20px 0 0;
+            width: 100%;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+        }
+        .btn:hover { background: #6a11cb; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>📄 View Attendance</h2>
+
+        <!-- Profile Info -->
+        <p id="name">Name: </p>
+        <p id="studentId">Student ID: </p>
+
+        <!-- Attendance Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Subject</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="attendanceBody">
+                <!-- Attendance rows here -->
+            </tbody>
+        </table>
+
+        <a href="dashboard.html" class="btn">⬅ Back to Dashboard</a>
+    </div>
+
+    <script>
+        // ✅ Get student info from SESSION
+        fetch('php/get_session.php')
+            .then(response => response.json())
+            .then(session => {
+                if (session.error) {
+                    alert('Session expired. Please login again.');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const id = session.student_id;
+                const name = session.student_name;
+
+                // ✅ Show student profile
+                document.getElementById('name').textContent = 'Name: ' + name;
+                document.getElementById('studentId').textContent = 'Student ID: ' + id;
+
+                // ✅ Fetch attendance
+                fetch('php/view_attendance.php?id=' + id)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Attendance Data:', data);  // Debug print
+
+                        const tbody = document.getElementById('attendanceBody');
+                        tbody.innerHTML = ''; // Clear old data
+
+                        if (data.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="3">No attendance records found.</td></tr>';
+                            return;
+                        }
+
+                        data.forEach(row => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${row.date}</td>
+                                <td>${row.subject_name}</td>
+                                <td>${row.status}</td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    })
+                    .catch(err => {
+                        console.error('Error loading attendance:', err);
+                    });
+
+            })
+            .catch(err => {
+                console.error('Error getting session:', err);
+            });
+
+    </script>
+
+</body>
+</html>

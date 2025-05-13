@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Attendance</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            width: 400px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+        label {
+            color: #555;
+            font-weight: bold;
+            margin-bottom: 5px;
+            align-self: flex-start;
+        }
+        input[type="date"], select {
+            width: 90%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button, input[type="submit"] {
+            background: #2575fc;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover, input[type="submit"]:hover {
+            background: #6a11cb;
+        }
+        a {
+            color: #2575fc;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📅 Mark Attendance</h2>
+        <form id="attendanceForm">
+            <!-- ✅ Student Name & ID from Session -->
+            <p id="studentInfo"></p>
+
+            <label for="subject_id">Subject:</label>
+            <select name="subject_id" id="subjectDropdown" required>
+                <option value="">Loading subjects...</option>
+            </select>
+
+            <label for="date">Date:</label>
+            <input type="date" name="date" id="date" required>
+
+            <label for="status">Status:</label>
+            <select name="status" id="status" required>
+                <option value="Present">Present</option>
+                <option value="Absent">Absent</option>
+            </select>
+
+            <input type="submit" value="Mark Attendance">
+        </form>
+    </div>
+
+    <script>
+        let studentId = null;
+
+        // ✅ Load session first
+        fetch('php/get_session.php')
+            .then(response => response.json())
+            .then(session => {
+                if (session.error) {
+                    alert('Session expired. Please login again.');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                studentId = session.student_id;
+                const name = session.student_name;
+                document.getElementById('studentInfo').textContent = `Name: ${name} | ID: ${studentId}`;
+            })
+            .catch(err => console.error('Error getting session:', err));
+
+        // ✅ Load subjects
+        fetch('php/get_subjects.php')
+            .then(response => response.json())
+            .then(data => {
+                const dropdown = document.getElementById('subjectDropdown');
+                dropdown.innerHTML = '<option value="">Select subject</option>';  // Clear old
+                data.forEach(subject => {
+                    let option = document.createElement('option');
+                    option.value = subject.subject_id;
+                    option.text = subject.subject_name + " (ID: " + subject.subject_id + ")";
+                    dropdown.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading subjects:', error);
+            });
+
+        // ✅ Handle form submit
+        document.getElementById('attendanceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            if (!studentId) {
+                alert('Student session not found!');
+                return;
+            }
+
+            const subjectId = document.getElementById('subjectDropdown').value;
+            const date = document.getElementById('date').value;
+            const status = document.getElementById('status').value;
+
+            // ✅ Prepare POST data
+            const formData = new FormData();
+            formData.append('student_id', studentId);
+            formData.append('subject_id', subjectId);
+            formData.append('date', date);
+            formData.append('status', status);
+
+            fetch('php/mark_attendance.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                document.getElementById('attendanceForm').reset();
+            })
+            .catch(err => {
+                console.error('Error marking attendance:', err);
+            });
+        });
+    </script>
+</body>
+</html>
